@@ -30,5 +30,5 @@ func (t Token) toString() string {
 	if t.Literal != nil {
 		literal = *t.Literal
 	}
-	return fmt.Sprintf("%v %v %v", t.TokenType, t.Lexeme, literal)
+	return fmt.Sprintf("%v %v %v\n", t.TokenType, t.Lexeme, literal)
 }

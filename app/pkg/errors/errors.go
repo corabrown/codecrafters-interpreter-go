@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type Error struct {
 	line    int
@@ -8,7 +11,7 @@ type Error struct {
 }
 
 func (v Error) Report(where string) {
-	fmt.Printf("[line %v] Error: %v: %v\n", v.line, where, v.message)
+	fmt.Fprint(os.Stderr, fmt.Sprintf("[line %d] Error: %v: %v\n", v.line, where, v.message))
 }
 
 func NewError(line int, message string) Error {

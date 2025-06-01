@@ -2,6 +2,7 @@ package scan
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
 )
@@ -9,12 +10,13 @@ import (
 func Scan(fileContents string) Scanner {
 	s := NewScanner(string(fileContents))
 	s.scanTokens()
+	for _, t := range s.tokens {
+		fmt.Fprint(os.Stdout, t.toString())
+	}
 	for _, e := range s.errors {
 		e.Report("Unexpected character")
 	}
-	for _, t := range s.tokens {
-		fmt.Println(t.toString())
-	}
+
 	return s
 }
 
