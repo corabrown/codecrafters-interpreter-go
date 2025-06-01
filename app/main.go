@@ -67,7 +67,11 @@ type Token struct {
 }
 
 func (t Token) toString() string {
-	return fmt.Sprintf("%v %v %v", t.TokenType, t.Lexeme, t.Literal)
+	literal := "null"
+	if t.Literal != nil {
+		literal = *t.Literal
+	}
+	return fmt.Sprintf("%v %v %v", t.TokenType, t.Lexeme, literal)
 }
 
 func Scan(fileContents string) {
@@ -128,6 +132,6 @@ func (s *Scanner) advance() (string, bool) {
 }
 
 func (s *Scanner) addToken(t TokenType) {
-	text := s.source[s.start:s.current+1]
+	text := s.source[s.start : s.current+1]
 	s.tokens = append(s.tokens, Token{t, text, nil, s.line})
 }
