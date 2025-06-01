@@ -2,12 +2,13 @@ package scan
 
 import "fmt"
 
-func Scan(fileContents string) {
+func Scan(fileContents string) Scanner {
 	s := NewScanner(string(fileContents))
 	s.scanTokens()
 	for _, t := range s.tokens {
 		fmt.Println(t.toString())
 	}
+	return s 
 }
 
 type Scanner struct {

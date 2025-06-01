@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/scan"
 )
 
@@ -13,6 +14,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	commands := os.Args
+	_ = commands
 	command := os.Args[1]
 
 	if command != "tokenize" {

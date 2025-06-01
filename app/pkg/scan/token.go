@@ -11,10 +11,10 @@ const (
 	RIGHT_BRACE TokenType = "RIGHT_BRACE"
 	COMMA       TokenType = "COMMA"
 	DOT         TokenType = "DOT"
-	MINUS       TokenType = "-"
-	PLUS        TokenType = "+"
-	SEMICOLON   TokenType = ";"
-	STAR        TokenType = "*"
+	MINUS       TokenType = "MINUS"
+	PLUS        TokenType = "PLUS"
+	SEMICOLON   TokenType = "SEMICOLON"
+	STAR        TokenType = "STAR"
 	EOF         TokenType = "EOF"
 )
 

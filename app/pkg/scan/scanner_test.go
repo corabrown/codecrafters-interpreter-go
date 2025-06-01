@@ -4,33 +4,35 @@ import (
 	"testing"
 )
 
-func TestMatching(t *testing.T) {
+func TestSingleChacterTokens(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		pattern  string
-		expected bool
+		name    string
+		input   string
+		pattern string
 	}{
 		{
 			"parentheses",
 			"(()",
 			"",
-			true,
 		},
 		{
 			"brackets",
 			"{{}}",
 			"",
-			true,
+		},
+		{
+			"other-tokens",
+			"({*.,+*})",
+			"",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Scan(tt.input)
-			// if result != tt.expected {
-			// 	t.Errorf("incorrect result for %v, %v", string(tt.input), tt.pattern)
-			// }
+			scanner := Scan(tt.input)
+			if len(scanner.tokens) != len(tt.input)+1 {
+				t.Errorf("incorrect result for %v, %v", string(tt.input), tt.pattern)
+			}
 		})
 	}
 }
