@@ -8,7 +8,7 @@ type Error struct {
 }
 
 func (v Error) Report(where string) {
-	fmt.Printf("[line %v] Error %v: %v\n", v.line, where, v.message)
+	fmt.Printf("[line %v] Error: %v: %v\n", v.line, where, v.message)
 }
 
 func NewError(line int, message string) Error {
