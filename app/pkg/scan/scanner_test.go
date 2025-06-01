@@ -17,6 +17,12 @@ func TestMatching(t *testing.T) {
 			"",
 			true,
 		},
+		{
+			"brackets",
+			"{{}}",
+			"",
+			true,
+		},
 	}
 
 	for _, tt := range tests {
