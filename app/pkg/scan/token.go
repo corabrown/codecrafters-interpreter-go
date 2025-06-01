@@ -7,6 +7,14 @@ type TokenType string
 const (
 	LEFT_PAREN  TokenType = "LEFT_PAREN"
 	RIGHT_PAREN TokenType = "RIGHT_PAREN"
+	LEFT_BRACE  TokenType = "LEFT_BRACE"
+	RIGHT_BRACE TokenType = "RIGHT_BRACE"
+	COMMA       TokenType = ","
+	DOT         TokenType = "."
+	MINUS       TokenType = "-"
+	PLUS        TokenType = "+"
+	SEMICOLON   TokenType = ";"
+	STAR        TokenType = "*"
 	EOF         TokenType = "EOF"
 )
 
