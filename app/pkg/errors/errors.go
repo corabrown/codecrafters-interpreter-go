@@ -8,10 +8,11 @@ import (
 type Error struct {
 	line    int
 	message string
+	where   string
 }
 
-func (v Error) Report(where string) {
-	fmt.Fprint(os.Stderr, fmt.Sprintf("[line %d] Error: %v: %v\n", v.line, where, v.message))
+func (v Error) Report() {
+	fmt.Fprint(os.Stderr, fmt.Sprintf("[line %d] Error%v: %v\n", v.line, v.where, v.message))
 }
 
 func NewError(line int, message string) Error {

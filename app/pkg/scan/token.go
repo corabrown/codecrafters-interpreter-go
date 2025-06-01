@@ -24,6 +24,7 @@ const (
 	GREATER       TokenType = "GREATER"
 	GREATER_EQUAL TokenType = "GREATER_EQUAL"
 	SLASH         TokenType = "SLASH"
+	STRING        TokenType = "STRING"
 	EOF           TokenType = "EOF"
 )
 

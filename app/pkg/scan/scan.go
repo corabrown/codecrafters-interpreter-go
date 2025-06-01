@@ -14,7 +14,7 @@ func Scan(fileContents string) Scanner {
 		fmt.Fprint(os.Stdout, t.toString())
 	}
 	for _, e := range s.errors {
-		e.Report("Unexpected character")
+		e.Report()
 	}
 
 	return s
@@ -55,48 +55,50 @@ func (s *Scanner) scanToken() {
 
 	switch c {
 	case "(":
-		s.addToken(LEFT_PAREN)
+		s.addToken(LEFT_PAREN, nil)
 	case ")":
-		s.addToken(RIGHT_PAREN)
+		s.addToken(RIGHT_PAREN, nil)
 	case "{":
-		s.addToken(LEFT_BRACE)
+		s.addToken(LEFT_BRACE, nil)
 	case "}":
-		s.addToken(RIGHT_BRACE)
+		s.addToken(RIGHT_BRACE, nil)
 	case ",":
-		s.addToken(COMMA)
+		s.addToken(COMMA, nil)
 	case ".":
-		s.addToken(DOT)
+		s.addToken(DOT, nil)
 	case "-":
-		s.addToken(MINUS)
+		s.addToken(MINUS, nil)
 	case "+":
-		s.addToken(PLUS)
+		s.addToken(PLUS, nil)
 	case ";":
-		s.addToken(SEMICOLON)
+		s.addToken(SEMICOLON, nil)
 	case "*":
-		s.addToken(STAR)
+		s.addToken(STAR, nil)
 	case "=":
-		s.addToken(s.switchMatch("=", EQUAL_EQUAL, EQUAL))
+		s.addToken(s.switchMatch("=", EQUAL_EQUAL, EQUAL), nil)
 	case "!":
-		s.addToken(s.switchMatch("=", BANG_EQUAL, BANG))
+		s.addToken(s.switchMatch("=", BANG_EQUAL, BANG), nil)
 	case "<":
-		s.addToken(s.switchMatch("=", LESS_EQUAL, LESS))
+		s.addToken(s.switchMatch("=", LESS_EQUAL, LESS), nil)
 	case ">":
-		s.addToken(s.switchMatch("=", GREATER_EQUAL, GREATER))
+		s.addToken(s.switchMatch("=", GREATER_EQUAL, GREATER), nil)
 	case "/":
 		if s.match("/") {
 			for !s.isAtEnd() && s.peek() != "\n" {
 				s.advance()
 			}
 		} else {
-			s.addToken(SLASH)
+			s.addToken(SLASH, nil)
 		}
 	case " ", "\r", "\t":
 		return
 	case "\n":
 		s.line++
 		return
+	case "\"":
+		s.string()
 	default:
-		s.addError()
+		s.addError(fmt.Sprintf("Unexpected character: %v", s.source[s.start:s.current]))
 	}
 }
 
@@ -112,14 +114,13 @@ func (s *Scanner) currentChar() string {
 	return currentChar
 }
 
-func (s *Scanner) addToken(t TokenType) {
+func (s *Scanner) addToken(t TokenType, literal *string) {
 	endingIndex := min(s.current, len(s.source))
 	text := s.source[s.start:endingIndex]
-	s.tokens = append(s.tokens, Token{t, text, nil, s.line})
+	s.tokens = append(s.tokens, Token{t, text, literal, s.line})
 }
 
-func (s *Scanner) addError() {
-	message := s.source[s.start:s.current]
+func (s *Scanner) addError(message string) {
 	s.errors = append(s.errors, errors.NewError(s.line, message))
 }
 
@@ -148,4 +149,21 @@ func (s *Scanner) peek() string {
 		return "\\0"
 	}
 	return s.currentChar()
+}
+
+func (s *Scanner) string() {
+	for !s.isAtEnd() && s.peek() != "\"" {
+		if s.peek() == "\n" {
+			s.line++
+		}
+		s.advance()
+	}
+	if s.isAtEnd() {
+		s.addError("Unterminated string.")
+		return
+	}
+	s.advance()
+
+	value := s.source[s.start+1 : s.current-1]
+	s.addToken(STRING, &value)
 }
