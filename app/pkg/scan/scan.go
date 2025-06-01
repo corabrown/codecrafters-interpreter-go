@@ -55,52 +55,55 @@ func (s *Scanner) scanToken() {
 	c := s.advance()
 
 	switch c {
-	case "(":
+	case '(':
 		s.addToken(LEFT_PAREN, nil)
-	case ")":
+	case ')':
 		s.addToken(RIGHT_PAREN, nil)
-	case "{":
+	case '{':
 		s.addToken(LEFT_BRACE, nil)
-	case "}":
+	case '}':
 		s.addToken(RIGHT_BRACE, nil)
-	case ",":
+	case ',':
 		s.addToken(COMMA, nil)
-	case ".":
+	case '.':
 		s.addToken(DOT, nil)
-	case "-":
+	case '-':
 		s.addToken(MINUS, nil)
-	case "+":
+	case '+':
 		s.addToken(PLUS, nil)
-	case ";":
+	case ';':
 		s.addToken(SEMICOLON, nil)
-	case "*":
+	case '*':
 		s.addToken(STAR, nil)
-	case "=":
-		s.addToken(s.switchMatch("=", EQUAL_EQUAL, EQUAL), nil)
-	case "!":
-		s.addToken(s.switchMatch("=", BANG_EQUAL, BANG), nil)
-	case "<":
-		s.addToken(s.switchMatch("=", LESS_EQUAL, LESS), nil)
-	case ">":
-		s.addToken(s.switchMatch("=", GREATER_EQUAL, GREATER), nil)
-	case "/":
-		if s.match("/") {
-			for !s.isAtEnd() && s.peek() != "\n" {
+	case '=':
+		s.addToken(s.switchMatch('=', EQUAL_EQUAL, EQUAL), nil)
+	case '!':
+		s.addToken(s.switchMatch('=', BANG_EQUAL, BANG), nil)
+	case '<':
+		s.addToken(s.switchMatch('=', LESS_EQUAL, LESS), nil)
+	case '>':
+		s.addToken(s.switchMatch('=', GREATER_EQUAL, GREATER), nil)
+	case '/':
+		if s.match('/') {
+			for !s.isAtEnd() && s.peek() != '\n' {
 				s.advance()
 			}
 		} else {
 			s.addToken(SLASH, nil)
 		}
-	case " ", "\r", "\t":
+	case ' ', '\r', '\t':
 		return
-	case "\n":
+	case '\n':
 		s.line++
 		return
-	case "\"":
+	case '"':
 		s.string()
 	default:
 		if isDigit(c) {
 			s.number()
+			return
+		} else if isAlpha(c) {
+			s.identifier()
 			return
 		}
 
@@ -108,16 +111,14 @@ func (s *Scanner) scanToken() {
 	}
 }
 
-func (s *Scanner) advance() string {
+func (s *Scanner) advance() byte {
 	char := s.currentChar()
 	s.current += 1
 	return char
 }
 
-func (s *Scanner) currentChar() string {
-
-	currentChar := string(s.source[s.current])
-	return currentChar
+func (s *Scanner) currentChar() byte {
+	return s.source[s.current]
 }
 
 func (s *Scanner) addToken(t TokenType, literal Literal) {
@@ -130,7 +131,7 @@ func (s *Scanner) addError(message string) {
 	s.errors = append(s.errors, errors.NewError(s.line, message))
 }
 
-func (s *Scanner) match(expected string) bool {
+func (s *Scanner) match(expected byte) bool {
 	if s.isAtEnd() {
 		return false
 	}
@@ -141,7 +142,7 @@ func (s *Scanner) match(expected string) bool {
 	return true
 }
 
-func (s *Scanner) switchMatch(expected string, matched, nonMatched TokenType) TokenType {
+func (s *Scanner) switchMatch(expected byte, matched, nonMatched TokenType) TokenType {
 	isMatch := s.match(expected)
 	if isMatch {
 		s.current += 1
@@ -150,23 +151,23 @@ func (s *Scanner) switchMatch(expected string, matched, nonMatched TokenType) To
 	return nonMatched
 }
 
-func (s *Scanner) peek() string {
+func (s *Scanner) peek() byte {
 	if s.isAtEnd() {
-		return "\\0"
+		return 0
 	}
 	return s.currentChar()
 }
 
-func (s *Scanner) peekNext() string {
+func (s *Scanner) peekNext() byte {
 	if s.current+1 > len(s.source) {
-		return "\\0"
+		return 0
 	}
-	return string(s.source[s.current+1])
+	return s.source[s.current+1]
 }
 
 func (s *Scanner) string() {
-	for !s.isAtEnd() && s.peek() != "\"" {
-		if s.peek() == "\n" {
+	for !s.isAtEnd() && s.peek() != '"' {
+		if s.peek() == '\n' {
 			s.line++
 		}
 		s.advance()
@@ -186,7 +187,7 @@ func (s *Scanner) number() {
 		s.advance()
 	}
 
-	if s.peek() == "." && isDigit(s.peekNext()) {
+	if s.peek() == '.' && isDigit(s.peekNext()) {
 		s.advance()
 		for isDigit(s.peek()) {
 			s.advance()
@@ -197,9 +198,22 @@ func (s *Scanner) number() {
 	s.addToken(NUMBER, numberLiteral{val})
 }
 
-func isDigit(s string) bool {
-	if len(s) != 1 {
-		return false
+func (s *Scanner) identifier() {
+	for isAlphaNumeric(s.peek()) {
+		s.advance()
 	}
-	return (byte(s[0]) >= '0') && (byte(s[0]) <= '9')
+	s.addToken(IDENTIFIER, nil)
+}
+
+
+func isDigit(b byte) bool {
+	return (b >= '0') && (b <= '9')
+}
+
+func isAlpha(b byte) bool {
+	return (b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z') || (b == '_')
+}
+
+func isAlphaNumeric(b byte) bool {
+	return isAlpha(b) || isDigit(b)
 }

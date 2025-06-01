@@ -26,6 +26,7 @@ const (
 	SLASH         TokenType = "SLASH"
 	STRING        TokenType = "STRING"
 	NUMBER        TokenType = "NUMBER"
+	IDENTIFIER    TokenType = "IDENTIFIER"
 	EOF           TokenType = "EOF"
 )
 
