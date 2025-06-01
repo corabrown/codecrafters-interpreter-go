@@ -32,7 +32,7 @@ func main() {
 
 	var s scan.Scanner
 	if len(fileContents) > 0 {
-		scan.Scan(string(fileContents))
+		s = scan.Scan(string(fileContents))
 	} else {
 		fmt.Println("EOF  null")
 	}
