@@ -75,13 +75,21 @@ func (s *Scanner) scanToken() {
 	case "*":
 		s.addToken(STAR)
 	case "=":
-		s.addToken(s.match("=", EQUAL_EQUAL, EQUAL))
+		s.addToken(s.switchMatch("=", EQUAL_EQUAL, EQUAL))
 	case "!":
-		s.addToken(s.match("=", BANG_EQUAL, BANG))
+		s.addToken(s.switchMatch("=", BANG_EQUAL, BANG))
 	case "<":
-		s.addToken(s.match("=", LESS_EQUAL, LESS))
+		s.addToken(s.switchMatch("=", LESS_EQUAL, LESS))
 	case ">":
-		s.addToken(s.match("=", GREATER_EQUAL, GREATER))
+		s.addToken(s.switchMatch("=", GREATER_EQUAL, GREATER))
+	case "/":
+		if s.match("/") {
+			for !s.isAtEnd() && s.currentChar() != "\n" {
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH)
+		}
 	default:
 		s.addError()
 	}
@@ -110,13 +118,22 @@ func (s *Scanner) addError() {
 	s.errors = append(s.errors, errors.NewError(s.line, message))
 }
 
-func (s *Scanner) match(expected string, matched, nonMatched TokenType) TokenType {
+func (s *Scanner) match(expected string) bool {
 	if s.isAtEnd() {
-		return nonMatched
+		return false
 	}
 	if char := s.currentChar(); char != expected {
-		return nonMatched
+		return false
 	}
-	s.current += 1
-	return matched
+
+	return true
+}
+
+func (s *Scanner) switchMatch(expected string, matched, nonMatched TokenType) TokenType {
+	isMatch := s.match(expected)
+	if isMatch {
+		s.current += 1
+		return matched
+	}
+	return nonMatched
 }
