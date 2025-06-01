@@ -121,10 +121,13 @@ func (s *Scanner) currentChar() byte {
 	return s.source[s.current]
 }
 
-func (s *Scanner) addToken(t TokenType, literal Literal) {
+func (s *Scanner) currentToken() string {
 	endingIndex := min(s.current, len(s.source))
-	text := s.source[s.start:endingIndex]
-	s.tokens = append(s.tokens, Token{t, text, literal, s.line})
+	return s.source[s.start:endingIndex]
+}
+
+func (s *Scanner) addToken(t TokenType, literal Literal) {
+	s.tokens = append(s.tokens, Token{t, s.currentToken(), literal, s.line})
 }
 
 func (s *Scanner) addError(message string) {
@@ -202,9 +205,14 @@ func (s *Scanner) identifier() {
 	for isAlphaNumeric(s.peek()) {
 		s.advance()
 	}
-	s.addToken(IDENTIFIER, nil)
-}
 
+	tokenType := IDENTIFIER
+	if t, ok := keywords[s.currentToken()]; ok {
+		tokenType = t
+	}
+
+	s.addToken(tokenType, nil)
+}
 
 func isDigit(b byte) bool {
 	return (b >= '0') && (b <= '9')
