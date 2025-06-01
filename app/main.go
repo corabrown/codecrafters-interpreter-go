@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/scan"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	if len(fileContents) > 0 {
-		Scan(string(fileContents))
+		scan.Scan(string(fileContents))
 	} else {
 		fmt.Println("EOF  null")
 	}
@@ -49,89 +50,4 @@ func (v Error) report(where string) {
 
 type Lox struct {
 	hadError bool
-}
-
-type TokenType string
-
-const (
-	LEFT_PAREN  TokenType = "LEFT_PAREN"
-	RIGHT_PAREN TokenType = "RIGHT_PAREN"
-	EOF         TokenType = "EOF"
-)
-
-type Token struct {
-	TokenType TokenType
-	Lexeme    string
-	Literal   *string // todo: what to make this?
-	Line      int
-}
-
-func (t Token) toString() string {
-	literal := "null"
-	if t.Literal != nil {
-		literal = *t.Literal
-	}
-	return fmt.Sprintf("%v %v %v", t.TokenType, t.Lexeme, literal)
-}
-
-func Scan(fileContents string) {
-	s := NewScanner(string(fileContents))
-	s.scanTokens()
-	for _, t := range s.tokens {
-		fmt.Println(t.toString())
-	}
-}
-
-type Scanner struct {
-	source  string
-	start   int
-	current int
-	line    int
-	tokens  []Token
-}
-
-func NewScanner(source string) Scanner {
-	return Scanner{source: source, tokens: make([]Token, 0)}
-}
-
-func (s *Scanner) isAtEnd() bool {
-	return s.current >= len(s.source)
-}
-
-func (s *Scanner) scanTokens() {
-	for !s.isAtEnd() {
-		s.start = s.current
-		s.scanToken()
-	}
-
-	s.tokens = append(s.tokens, Token{TokenType: EOF, Lexeme: "", Literal: nil, Line: s.line})
-
-}
-
-func (s *Scanner) scanToken() {
-	c, ok := s.advance()
-	if !ok { // todo: what should we do here?
-		return
-	}
-
-	switch c {
-	case "(":
-		s.addToken(LEFT_PAREN)
-	case ")":
-		s.addToken(RIGHT_PAREN)
-	}
-	s.current += 1
-}
-
-func (s *Scanner) advance() (string, bool) {
-	if len(s.source) < s.current {
-		return "", false
-	}
-
-	return string(s.source[s.current]), true
-}
-
-func (s *Scanner) addToken(t TokenType) {
-	text := s.source[s.start : s.current+1]
-	s.tokens = append(s.tokens, Token{t, text, nil, s.line})
 }
