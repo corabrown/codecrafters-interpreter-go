@@ -1,14 +1,21 @@
 package scan
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
+)
 
 func Scan(fileContents string) Scanner {
 	s := NewScanner(string(fileContents))
 	s.scanTokens()
+	for _, e := range s.errors {
+		e.Report("Unexpected character")
+	}
 	for _, t := range s.tokens {
 		fmt.Println(t.toString())
 	}
-	return s 
+	return s
 }
 
 type Scanner struct {
@@ -17,10 +24,11 @@ type Scanner struct {
 	current int
 	line    int
 	tokens  []Token
+	errors  []errors.Error
 }
 
 func NewScanner(source string) Scanner {
-	return Scanner{source: source, tokens: make([]Token, 0)}
+	return Scanner{source: source, tokens: make([]Token, 0), errors: make([]errors.Error, 0), line: 1}
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -34,7 +42,10 @@ func (s *Scanner) scanTokens() {
 	}
 
 	s.tokens = append(s.tokens, Token{TokenType: EOF, Lexeme: "", Literal: nil, Line: s.line})
+}
 
+func (s *Scanner) ScanError() bool {
+	return len(s.errors) > 0
 }
 
 func (s *Scanner) scanToken() {
@@ -64,6 +75,8 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case "*":
 		s.addToken(STAR)
+	default:
+		s.addError()
 	}
 	s.current += 1
 }
@@ -79,4 +92,9 @@ func (s *Scanner) advance() (string, bool) {
 func (s *Scanner) addToken(t TokenType) {
 	text := s.source[s.start : s.current+1]
 	s.tokens = append(s.tokens, Token{t, text, nil, s.line})
+}
+
+func (s *Scanner) addError() {
+	message := s.source[s.start : s.current+1]
+	s.errors = append(s.errors, errors.NewError(s.line, message))
 }

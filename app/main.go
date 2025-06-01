@@ -30,25 +30,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	var s scan.Scanner
 	if len(fileContents) > 0 {
 		scan.Scan(string(fileContents))
 	} else {
 		fmt.Println("EOF  null")
 	}
 
-	lox := Lox{}
+	lox := Lox{hadError: s.ScanError()}
 	if lox.hadError {
 		os.Exit(65)
 	}
-}
-
-type Error struct {
-	line    int
-	message string
-}
-
-func (v Error) report(where string) {
-	fmt.Printf("[line %v] Error %v: %v", v.line, where, v.message)
 }
 
 type Lox struct {
