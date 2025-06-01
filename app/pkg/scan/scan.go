@@ -84,12 +84,17 @@ func (s *Scanner) scanToken() {
 		s.addToken(s.switchMatch("=", GREATER_EQUAL, GREATER))
 	case "/":
 		if s.match("/") {
-			for !s.isAtEnd() && s.currentChar() != "\n" {
+			for !s.isAtEnd() && s.peek() != "\n" {
 				s.advance()
 			}
 		} else {
 			s.addToken(SLASH)
 		}
+	case " ", "\r", "\t":
+		return
+	case "\n":
+		s.line++
+		return
 	default:
 		s.addError()
 	}
@@ -136,4 +141,11 @@ func (s *Scanner) switchMatch(expected string, matched, nonMatched TokenType) To
 		return matched
 	}
 	return nonMatched
+}
+
+func (s *Scanner) peek() string {
+	if s.isAtEnd() {
+		return "\\0"
+	}
+	return s.currentChar()
 }
