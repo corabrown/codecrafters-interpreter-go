@@ -3,6 +3,7 @@ package scan
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
 )
@@ -98,6 +99,11 @@ func (s *Scanner) scanToken() {
 	case "\"":
 		s.string()
 	default:
+		if isDigit(c) {
+			s.number()
+			return
+		}
+
 		s.addError(fmt.Sprintf("Unexpected character: %v", s.source[s.start:s.current]))
 	}
 }
@@ -114,7 +120,7 @@ func (s *Scanner) currentChar() string {
 	return currentChar
 }
 
-func (s *Scanner) addToken(t TokenType, literal *string) {
+func (s *Scanner) addToken(t TokenType, literal Literal) {
 	endingIndex := min(s.current, len(s.source))
 	text := s.source[s.start:endingIndex]
 	s.tokens = append(s.tokens, Token{t, text, literal, s.line})
@@ -151,6 +157,13 @@ func (s *Scanner) peek() string {
 	return s.currentChar()
 }
 
+func (s *Scanner) peekNext() string {
+	if s.current+1 > len(s.source) {
+		return "\\0"
+	}
+	return string(s.source[s.current+1])
+}
+
 func (s *Scanner) string() {
 	for !s.isAtEnd() && s.peek() != "\"" {
 		if s.peek() == "\n" {
@@ -165,5 +178,28 @@ func (s *Scanner) string() {
 	s.advance()
 
 	value := s.source[s.start+1 : s.current-1]
-	s.addToken(STRING, &value)
+	s.addToken(STRING, stringLiteral{value})
+}
+
+func (s *Scanner) number() {
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+
+	if s.peek() == "." && isDigit(s.peekNext()) {
+		s.advance()
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+	val, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
+
+	s.addToken(NUMBER, numberLiteral{val})
+}
+
+func isDigit(s string) bool {
+	if len(s) != 1 {
+		return false
+	}
+	return (byte(s[0]) >= '0') && (byte(s[0]) <= '9')
 }

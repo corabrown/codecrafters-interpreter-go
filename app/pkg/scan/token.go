@@ -25,20 +25,44 @@ const (
 	GREATER_EQUAL TokenType = "GREATER_EQUAL"
 	SLASH         TokenType = "SLASH"
 	STRING        TokenType = "STRING"
+	NUMBER        TokenType = "NUMBER"
 	EOF           TokenType = "EOF"
 )
 
 type Token struct {
 	TokenType TokenType
 	Lexeme    string
-	Literal   *string // todo: what to make this?
+	Literal   Literal // todo: what to make this?
 	Line      int
 }
 
 func (t Token) toString() string {
 	literal := "null"
 	if t.Literal != nil {
-		literal = *t.Literal
+		literal = t.Literal.toString()
 	}
 	return fmt.Sprintf("%v %v %v\n", t.TokenType, t.Lexeme, literal)
+}
+
+type Literal interface {
+	toString() string
+}
+
+type stringLiteral struct {
+	val string
+}
+
+func (s stringLiteral) toString() string {
+	return s.val
+}
+
+type numberLiteral struct {
+	val float64
+}
+
+func (n numberLiteral) toString() string {
+	if n.val == float64(int(n.val)) {
+		return fmt.Sprintf("%.1f", n.val)
+	}
+	return fmt.Sprintf("%v", n.val)
 }
