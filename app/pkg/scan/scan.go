@@ -51,10 +51,7 @@ func (s *Scanner) ScanError() bool {
 }
 
 func (s *Scanner) scanToken() {
-	c, ok := s.advance()
-	if !ok { // todo: what should we do here?
-		return
-	}
+	c := s.advance()
 
 	switch c {
 	case "(":
@@ -77,26 +74,49 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case "*":
 		s.addToken(STAR)
+	case "=":
+		s.addToken(s.match("=", EQUAL_EQUAL, EQUAL))
+	case "!":
+		s.addToken(s.match("=", BANG_EQUAL, BANG))
+	case "<":
+		s.addToken(s.match("=", LESS_EQUAL, LESS))
+	case ">":
+		s.addToken(s.match("=", GREATER_EQUAL, GREATER))
 	default:
 		s.addError()
 	}
-	s.current += 1
 }
 
-func (s *Scanner) advance() (string, bool) {
-	if len(s.source) < s.current {
-		return "", false
-	}
+func (s *Scanner) advance() string {
+	char := s.currentChar()
+	s.current += 1
+	return char
+}
 
-	return string(s.source[s.current]), true
+func (s *Scanner) currentChar() string {
+
+	currentChar := string(s.source[s.current])
+	return currentChar
 }
 
 func (s *Scanner) addToken(t TokenType) {
-	text := s.source[s.start : s.current+1]
+	endingIndex := min(s.current, len(s.source))
+	text := s.source[s.start:endingIndex]
 	s.tokens = append(s.tokens, Token{t, text, nil, s.line})
 }
 
 func (s *Scanner) addError() {
-	message := s.source[s.start : s.current+1]
+	message := s.source[s.start:s.current]
 	s.errors = append(s.errors, errors.NewError(s.line, message))
+}
+
+func (s *Scanner) match(expected string, matched, nonMatched TokenType) TokenType {
+	if s.isAtEnd() {
+		return nonMatched
+	}
+	if char := s.currentChar(); char != expected {
+		return nonMatched
+	}
+	s.current += 1
+	return matched
 }
