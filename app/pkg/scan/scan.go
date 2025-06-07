@@ -8,31 +8,32 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
 )
 
-func Scan(fileContents string) Scanner {
-	s := NewScanner(string(fileContents))
-	s.scanTokens()
-	return s
-}
-
 type Scanner struct {
 	source  string
 	start   int
 	current int
 	line    int
 	tokens  []data.Token
-	errors  []errors.Error
+	errors  []*errors.Error
+	scanned bool
 }
 
 func NewScanner(source string) Scanner {
-	return Scanner{source: source, tokens: make([]data.Token, 0), errors: make([]errors.Error, 0), line: 1}
+	return Scanner{source: source, tokens: make([]data.Token, 0), errors: make([]*errors.Error, 0), line: 1}
+}
+
+func (s *Scanner) Scan() ([]data.Token, []*errors.Error) {
+	s.scanTokens()
+	s.scanned = true
+	return s.tokens, s.errors
+}
+
+func (s *Scanner) Scanned() bool {
+	return s.scanned
 }
 
 func (s *Scanner) GetTokens() []data.Token {
 	return s.tokens
-}
-
-func (s *Scanner) GetErrors() []errors.Error {
-	return s.errors
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -132,7 +133,7 @@ func (s *Scanner) addToken(t data.TokenType, literal data.Literal) {
 }
 
 func (s *Scanner) addError(message string) {
-	s.errors = append(s.errors, errors.NewError(s.line, message))
+	s.errors = append(s.errors, errors.NewError(s.line, message, ""))
 }
 
 func (s *Scanner) match(expected byte) bool {

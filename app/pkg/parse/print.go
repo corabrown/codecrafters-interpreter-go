@@ -35,7 +35,10 @@ func (v *AstPrinter) parenthesize(name string, exprs ...data.Expression) string 
 	sb.WriteString(name)
 	for _, expr := range exprs {
 		sb.WriteString(" ")
-		expr.Accept(v)
+
+		if expr != nil {
+			expr.Accept(v)
+		}
 		sb.WriteString(v.currentString)
 		v.currentString = ""
 	}
