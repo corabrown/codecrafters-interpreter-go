@@ -9,11 +9,11 @@ import (
 func Test_AstPrinter(t *testing.T) {
 	expr := data.BinaryExpr{
 		Left: data.UnaryExpr{
-			Operator: data.Token{data.MINUS, "-", nil, 1},
-			Right:    data.LiteralExpr{Value: data.NumberLiteral{123}},
+			Operator: data.Token{TokenType: data.MINUS, Lexeme: "-", Literal: nil, Line: 1},
+			Right:    data.LiteralExpr{Value: data.NumberLiteral{Val: 123}},
 		},
-		Operator: data.Token{data.STAR, "*", nil, 1},
-		Right:    data.GroupingExpr{data.LiteralExpr{data.NumberLiteral{45.67}}},
+		Operator: data.Token{TokenType: data.STAR, Lexeme: "*", Literal: nil, Line: 1},
+		Right:    data.GroupingExpr{Expression: data.LiteralExpr{Value: data.NumberLiteral{Val: 45.67}}},
 	}
 
 	printer := &AstPrinter{}

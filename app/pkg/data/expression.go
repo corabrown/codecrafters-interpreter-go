@@ -1,6 +1,5 @@
 package data
 
-
 type Expression interface {
 	Accept(visitor Visitor)
 }
@@ -33,7 +32,7 @@ func (v LiteralExpr) Accept(visitor Visitor) {
 
 type UnaryExpr struct {
 	Operator Token
-	Right Expression 
+	Right    Expression
 }
 
 func (v UnaryExpr) Accept(visitor Visitor) {

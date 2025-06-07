@@ -86,7 +86,7 @@ func (v *Parser) equality() data.Expression {
 		if right == nil {
 			v.errors = append(v.errors, v.error(v.peek(), "need non-null"))
 		}
-		expr = data.BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr
@@ -101,7 +101,7 @@ func (v *Parser) comparison() data.Expression {
 		if right == nil {
 			v.errors = append(v.errors, v.error(v.peek(), "need non-null"))
 		}
-		expr = data.BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr
@@ -116,7 +116,7 @@ func (v *Parser) term() data.Expression {
 		if right == nil {
 			v.errors = append(v.errors, v.error(v.peek(), "need non-null"))
 		}
-		expr = data.BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr
@@ -131,7 +131,7 @@ func (v *Parser) factor() data.Expression {
 		if right == nil {
 			v.errors = append(v.errors, v.error(v.peek(), "need non-null"))
 		}
-		expr = data.BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{Left: expr, Operator: operator, Right: right}
 	}
 
 	return expr
@@ -144,7 +144,7 @@ func (v *Parser) unary() data.Expression {
 		if right == nil {
 			v.errors = append(v.errors, v.error(v.peek(), "need non-null"))
 		}
-		return data.UnaryExpr{operator, right}
+		return data.UnaryExpr{Operator: operator, Right: right}
 	}
 
 	return v.primary()
@@ -152,23 +152,23 @@ func (v *Parser) unary() data.Expression {
 
 func (v *Parser) primary() data.Expression {
 	if v.match(data.FALSE) {
-		return data.LiteralExpr{data.BooleanLiteral{false}}
+		return data.LiteralExpr{Value: data.BooleanLiteral{Val: false}}
 	}
 	if v.match(data.TRUE) {
-		return data.LiteralExpr{data.BooleanLiteral{true}}
+		return data.LiteralExpr{Value: data.BooleanLiteral{Val: true}}
 	}
 	if v.match(data.NUMBER, data.STRING) {
-		return data.LiteralExpr{v.previous().Literal}
+		return data.LiteralExpr{Value: v.previous().Literal}
 	}
 	if v.match(data.NIL) {
-		return data.LiteralExpr{data.NullLiteral{}}
+		return data.LiteralExpr{Value: data.NullLiteral{}}
 	}
 	if v.match(data.LEFT_PAREN) { // todo: left to error part
 		expr := v.expression()
 		if _, err := v.consume(data.RIGHT_PAREN, "Expect ')' after expression."); err != nil {
 			v.syncronize()
 		}
-		return data.GroupingExpr{expr}
+		return data.GroupingExpr{Expression: expr}
 	}
 	return nil // todo: what to return by default?
 }

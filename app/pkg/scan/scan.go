@@ -129,7 +129,7 @@ func (s *Scanner) currentToken() string {
 }
 
 func (s *Scanner) addToken(t data.TokenType, literal data.Literal) {
-	s.tokens = append(s.tokens, data.Token{t, s.currentToken(), literal, s.line})
+	s.tokens = append(s.tokens, data.Token{TokenType: t, Lexeme: s.currentToken(), Literal: literal, Line: s.line})
 }
 
 func (s *Scanner) addError(message string) {
@@ -184,7 +184,7 @@ func (s *Scanner) string() {
 	s.advance()
 
 	value := s.source[s.start+1 : s.current-1]
-	s.addToken(data.STRING, data.StringLiteral{value})
+	s.addToken(data.STRING, data.StringLiteral{Val: value})
 }
 
 func (s *Scanner) number() {
@@ -200,7 +200,7 @@ func (s *Scanner) number() {
 	}
 	val, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
 
-	s.addToken(data.NUMBER, data.NumberLiteral{val})
+	s.addToken(data.NUMBER, data.NumberLiteral{Val: val})
 }
 
 func (s *Scanner) identifier() {

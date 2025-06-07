@@ -29,7 +29,8 @@ func TestSingleCharacterTokens(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			scanner := Scan(tt.input)
+			scanner := NewScanner(tt.input)
+			scanner.Scan()
 			if len(scanner.tokens) != len(tt.input)+1 {
 				t.Errorf("incorrect result for %v, %v", string(tt.input), tt.pattern)
 			}
