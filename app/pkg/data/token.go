@@ -1,4 +1,4 @@
-package scan
+package data
 
 import "fmt"
 
@@ -54,7 +54,7 @@ const (
 	EOF TokenType = "EOF"
 )
 
-var keywords = map[string]TokenType{
+var Keywords = map[string]TokenType{
 	"and":    AND,
 	"class":  CLASS,
 	"else":   ELSE,
@@ -119,7 +119,7 @@ func (b BooleanLiteral) ToString() string {
 	return fmt.Sprintf("%v", b.Val)
 }
 
-type NullLiteral struct {}
+type NullLiteral struct{}
 
 func (n NullLiteral) ToString() string {
 	return "nil"

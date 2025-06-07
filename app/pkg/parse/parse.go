@@ -1,25 +1,25 @@
 package parse
 
-import "github.com/codecrafters-io/interpreter-starter-go/app/pkg/scan"
+import "github.com/codecrafters-io/interpreter-starter-go/app/pkg/data"
 
 type Parser struct {
-	tokens  []scan.Token
+	tokens  []data.Token
 	current int
 }
 
-func NewParser(tokens []scan.Token) Parser {
+func NewParser(tokens []data.Token) Parser {
 	return Parser{tokens: tokens}
 }
 
-func (v *Parser) Parse() Expression {
+func (v *Parser) Parse() data.Expression {
 	return v.expression()
 }
 
-func (v *Parser) peek() scan.Token {
+func (v *Parser) peek() data.Token {
 	return v.tokens[v.current]
 }
 
-func (v *Parser) previous() scan.Token {
+func (v *Parser) previous() data.Token {
 	if v.current == 0 {
 		panic("can't fetch previous")
 	}
@@ -27,24 +27,24 @@ func (v *Parser) previous() scan.Token {
 }
 
 func (v *Parser) isAtEnd() bool {
-	return v.peek().TokenType == scan.EOF
+	return v.peek().TokenType == data.EOF
 }
 
-func (v *Parser) advance() scan.Token {
+func (v *Parser) advance() data.Token {
 	if !v.isAtEnd() {
 		v.current += 1
 	}
 	return v.previous()
 }
 
-func (v *Parser) check(t scan.TokenType) bool {
+func (v *Parser) check(t data.TokenType) bool {
 	if v.isAtEnd() {
 		return false
 	}
 	return v.peek().TokenType == t
 }
 
-func (v *Parser) match(types ...scan.TokenType) bool {
+func (v *Parser) match(types ...data.TokenType) bool {
 	for _, t := range types {
 		if v.check(t) {
 			v.advance()
@@ -54,88 +54,93 @@ func (v *Parser) match(types ...scan.TokenType) bool {
 	return false
 }
 
-func (v *Parser) expression() Expression {
+func (v *Parser) consume(t data.TokenType, message string) data.Token {
+	if v.check(t) {
+		return v.advance()
+	}
+
+	return data.Token{}
+}
+
+func (v *Parser) expression() data.Expression {
 	return v.equality()
 }
 
-func (v *Parser) equality() Expression {
+func (v *Parser) equality() data.Expression {
 	expr := v.comparison()
 
-	for v.match(scan.BANG_EQUAL, scan.EQUAL_EQUAL) {
+	for v.match(data.BANG_EQUAL, data.EQUAL_EQUAL) {
 		operator := v.previous()
 		right := v.comparison()
-		expr = BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{expr, operator, right}
 	}
 
 	return expr
 }
 
-func (v *Parser) comparison() Expression {
+func (v *Parser) comparison() data.Expression {
 	expr := v.term()
 
-	for v.match(scan.GREATER, scan.GREATER_EQUAL, scan.LESS, scan.LESS_EQUAL) {
+	for v.match(data.GREATER, data.GREATER_EQUAL, data.LESS, data.LESS_EQUAL) {
 		operator := v.previous()
 		right := v.term()
-		expr = BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{expr, operator, right}
 	}
 
 	return expr
 }
 
-func (v *Parser) term() Expression {
+func (v *Parser) term() data.Expression {
 	expr := v.factor()
 
-	for v.match(scan.MINUS, scan.PLUS) {
+	for v.match(data.MINUS, data.PLUS) {
 		operator := v.previous()
 		right := v.factor()
-		expr = BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{expr, operator, right}
 	}
 
 	return expr
 }
 
-func (v *Parser) factor() Expression {
+func (v *Parser) factor() data.Expression {
 	expr := v.unary()
 
-	for v.match(scan.SLASH, scan.STAR) {
+	for v.match(data.SLASH, data.STAR) {
 		operator := v.previous()
 		right := v.unary()
-		expr = BinaryExpr{expr, operator, right}
+		expr = data.BinaryExpr{expr, operator, right}
 	}
 
 	return expr
 }
 
-func (v *Parser) unary() Expression {
-	if v.match(scan.BANG, scan.MINUS) {
+func (v *Parser) unary() data.Expression {
+	if v.match(data.BANG, data.MINUS) {
 		operator := v.previous()
 		right := v.unary()
-		return UnaryExpr{operator, right}
+		return data.UnaryExpr{operator, right}
 	}
 
 	return v.primary()
 }
 
-func (v *Parser) primary() Expression {
-	if v.match(scan.FALSE) {
-		return LiteralExpr{scan.BooleanLiteral{false}}
+func (v *Parser) primary() data.Expression {
+	if v.match(data.FALSE) {
+		return data.LiteralExpr{data.BooleanLiteral{false}}
 	}
-	if v.match(scan.TRUE) {
-		return LiteralExpr{scan.BooleanLiteral{true}}
+	if v.match(data.TRUE) {
+		return data.LiteralExpr{data.BooleanLiteral{true}}
 	}
-	if v.match(scan.NUMBER, scan.STRING) {
-		return LiteralExpr{v.previous().Literal}
+	if v.match(data.NUMBER, data.STRING) {
+		return data.LiteralExpr{v.previous().Literal}
 	}
-	if v.match(scan.NIL) {
-		return LiteralExpr{scan.NullLiteral{}}
+	if v.match(data.NIL) {
+		return data.LiteralExpr{data.NullLiteral{}}
 	}
-	// if v.match(scan.LEFT_PAREN) { // todo: left to error part
-	// 	expr := v.expression()
-
-	// }
-	return BinaryExpr{} // todo: what to return by default?
+	if v.match(data.LEFT_PAREN) { // todo: left to error part
+		expr := v.expression()
+		v.consume(data.RIGHT_PAREN, "message")
+		return data.GroupingExpr{expr}
+	}
+	return data.BinaryExpr{} // todo: what to return by default?
 }
-
-// func (v *Parser) consume(t scan.TokenType, message string) {
-
-// }

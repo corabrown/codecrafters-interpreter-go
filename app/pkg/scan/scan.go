@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/data"
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
 )
 
@@ -18,15 +19,15 @@ type Scanner struct {
 	start   int
 	current int
 	line    int
-	tokens  []Token
+	tokens  []data.Token
 	errors  []errors.Error
 }
 
 func NewScanner(source string) Scanner {
-	return Scanner{source: source, tokens: make([]Token, 0), errors: make([]errors.Error, 0), line: 1}
+	return Scanner{source: source, tokens: make([]data.Token, 0), errors: make([]errors.Error, 0), line: 1}
 }
 
-func (s *Scanner) GetTokens() []Token {
+func (s *Scanner) GetTokens() []data.Token {
 	return s.tokens
 }
 
@@ -44,7 +45,7 @@ func (s *Scanner) scanTokens() {
 		s.scanToken()
 	}
 
-	s.tokens = append(s.tokens, Token{TokenType: EOF, Lexeme: "", Literal: nil, Line: s.line})
+	s.tokens = append(s.tokens, data.Token{TokenType: data.EOF, Lexeme: "", Literal: nil, Line: s.line})
 }
 
 func (s *Scanner) ScanError() bool {
@@ -56,40 +57,40 @@ func (s *Scanner) scanToken() {
 
 	switch c {
 	case '(':
-		s.addToken(LEFT_PAREN, nil)
+		s.addToken(data.LEFT_PAREN, nil)
 	case ')':
-		s.addToken(RIGHT_PAREN, nil)
+		s.addToken(data.RIGHT_PAREN, nil)
 	case '{':
-		s.addToken(LEFT_BRACE, nil)
+		s.addToken(data.LEFT_BRACE, nil)
 	case '}':
-		s.addToken(RIGHT_BRACE, nil)
+		s.addToken(data.RIGHT_BRACE, nil)
 	case ',':
-		s.addToken(COMMA, nil)
+		s.addToken(data.COMMA, nil)
 	case '.':
-		s.addToken(DOT, nil)
+		s.addToken(data.DOT, nil)
 	case '-':
-		s.addToken(MINUS, nil)
+		s.addToken(data.MINUS, nil)
 	case '+':
-		s.addToken(PLUS, nil)
+		s.addToken(data.PLUS, nil)
 	case ';':
-		s.addToken(SEMICOLON, nil)
+		s.addToken(data.SEMICOLON, nil)
 	case '*':
-		s.addToken(STAR, nil)
+		s.addToken(data.STAR, nil)
 	case '=':
-		s.addToken(s.switchMatch('=', EQUAL_EQUAL, EQUAL), nil)
+		s.addToken(s.switchMatch('=', data.EQUAL_EQUAL, data.EQUAL), nil)
 	case '!':
-		s.addToken(s.switchMatch('=', BANG_EQUAL, BANG), nil)
+		s.addToken(s.switchMatch('=', data.BANG_EQUAL, data.BANG), nil)
 	case '<':
-		s.addToken(s.switchMatch('=', LESS_EQUAL, LESS), nil)
+		s.addToken(s.switchMatch('=', data.LESS_EQUAL, data.LESS), nil)
 	case '>':
-		s.addToken(s.switchMatch('=', GREATER_EQUAL, GREATER), nil)
+		s.addToken(s.switchMatch('=', data.GREATER_EQUAL, data.GREATER), nil)
 	case '/':
 		if s.match('/') {
 			for !s.isAtEnd() && s.peek() != '\n' {
 				s.advance()
 			}
 		} else {
-			s.addToken(SLASH, nil)
+			s.addToken(data.SLASH, nil)
 		}
 	case ' ', '\r', '\t':
 		return
@@ -126,8 +127,8 @@ func (s *Scanner) currentToken() string {
 	return s.source[s.start:endingIndex]
 }
 
-func (s *Scanner) addToken(t TokenType, literal Literal) {
-	s.tokens = append(s.tokens, Token{t, s.currentToken(), literal, s.line})
+func (s *Scanner) addToken(t data.TokenType, literal data.Literal) {
+	s.tokens = append(s.tokens, data.Token{t, s.currentToken(), literal, s.line})
 }
 
 func (s *Scanner) addError(message string) {
@@ -145,7 +146,7 @@ func (s *Scanner) match(expected byte) bool {
 	return true
 }
 
-func (s *Scanner) switchMatch(expected byte, matched, nonMatched TokenType) TokenType {
+func (s *Scanner) switchMatch(expected byte, matched, nonMatched data.TokenType) data.TokenType {
 	isMatch := s.match(expected)
 	if isMatch {
 		s.current += 1
@@ -182,7 +183,7 @@ func (s *Scanner) string() {
 	s.advance()
 
 	value := s.source[s.start+1 : s.current-1]
-	s.addToken(STRING, StringLiteral{value})
+	s.addToken(data.STRING, data.StringLiteral{value})
 }
 
 func (s *Scanner) number() {
@@ -198,7 +199,7 @@ func (s *Scanner) number() {
 	}
 	val, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
 
-	s.addToken(NUMBER, NumberLiteral{val})
+	s.addToken(data.NUMBER, data.NumberLiteral{val})
 }
 
 func (s *Scanner) identifier() {
@@ -206,8 +207,8 @@ func (s *Scanner) identifier() {
 		s.advance()
 	}
 
-	tokenType := IDENTIFIER
-	if t, ok := keywords[s.currentToken()]; ok {
+	tokenType := data.IDENTIFIER
+	if t, ok := data.Keywords[s.currentToken()]; ok {
 		tokenType = t
 	}
 

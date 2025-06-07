@@ -3,17 +3,17 @@ package parse
 import (
 	"testing"
 
-	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/scan"
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/data"
 )
 
 func Test_AstPrinter(t *testing.T) {
-	expr := BinaryExpr{
-		left: UnaryExpr{
-			operator: scan.Token{scan.MINUS, "-", nil, 1},
-			right:    LiteralExpr{value: scan.NumberLiteral{123}},
+	expr := data.BinaryExpr{
+		Left: data.UnaryExpr{
+			Operator: data.Token{data.MINUS, "-", nil, 1},
+			Right:    data.LiteralExpr{Value: data.NumberLiteral{123}},
 		},
-		operater: scan.Token{scan.STAR, "*", nil, 1},
-		right:    GroupingExpr{LiteralExpr{scan.NumberLiteral{45.67}}},
+		Operator: data.Token{data.STAR, "*", nil, 1},
+		Right:    data.GroupingExpr{data.LiteralExpr{data.NumberLiteral{45.67}}},
 	}
 
 	printer := &AstPrinter{}

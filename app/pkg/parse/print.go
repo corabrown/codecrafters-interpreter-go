@@ -1,37 +1,41 @@
 package parse
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/data"
+)
 
 type AstPrinter struct {
 	currentString string
 }
 
-func (v *AstPrinter) visitBinary(b BinaryExpr) {
-	v.currentString = v.parenthesize(b.operator.Lexeme, b.left, b.right)
+func (v *AstPrinter) VisitBinary(b data.BinaryExpr) {
+	v.currentString = v.parenthesize(b.Operator.Lexeme, b.Left, b.Right)
 }
 
-func (v *AstPrinter) visitGrouping(g GroupingExpr) {
-	v.currentString = v.parenthesize("group", g.expression)
+func (v *AstPrinter) VisitGrouping(g data.GroupingExpr) {
+	v.currentString = v.parenthesize("group", g.Expression)
 }
 
-func (v *AstPrinter) visitLiteral(l LiteralExpr) {
-	if l.value == nil {
+func (v *AstPrinter) VisitLiteral(l data.LiteralExpr) {
+	if l.Value == nil {
 		v.currentString = "nil"
 	}
-	v.currentString = l.value.ToString()
+	v.currentString = l.Value.ToString()
 }
 
-func (v *AstPrinter) visitUnary(u UnaryExpr) {
-	v.currentString = v.parenthesize(u.operator.Lexeme, u.right)
+func (v *AstPrinter) VisitUnary(u data.UnaryExpr) {
+	v.currentString = v.parenthesize(u.Operator.Lexeme, u.Right)
 }
 
-func (v *AstPrinter) parenthesize(name string, exprs ...Expression) string {
+func (v *AstPrinter) parenthesize(name string, exprs ...data.Expression) string {
 	var sb strings.Builder
 	sb.WriteString("(")
 	sb.WriteString(name)
 	for _, expr := range exprs {
 		sb.WriteString(" ")
-		expr.accept(v)
+		expr.Accept(v)
 		sb.WriteString(v.currentString)
 		v.currentString = ""
 	}
@@ -40,7 +44,7 @@ func (v *AstPrinter) parenthesize(name string, exprs ...Expression) string {
 	return sb.String()
 }
 
-func (v *AstPrinter) Print(expr Expression) string {
-	expr.accept(v)
+func (v *AstPrinter) Print(expr data.Expression) string {
+	expr.Accept(v)
 	return v.currentString
 }
