@@ -80,33 +80,47 @@ type Token struct {
 	Line      int
 }
 
-func (t Token) toString() string {
+func (t Token) ToString() string {
 	literal := "null"
 	if t.Literal != nil {
-		literal = t.Literal.toString()
+		literal = t.Literal.ToString()
 	}
 	return fmt.Sprintf("%v %v %v\n", t.TokenType, t.Lexeme, literal)
 }
 
 type Literal interface {
-	toString() string
+	ToString() string
 }
 
-type stringLiteral struct {
-	val string
+type StringLiteral struct {
+	Val string
 }
 
-func (s stringLiteral) toString() string {
-	return s.val
+func (s StringLiteral) ToString() string {
+	return s.Val
 }
 
-type numberLiteral struct {
-	val float64
+type NumberLiteral struct {
+	Val float64
 }
 
-func (n numberLiteral) toString() string {
-	if n.val == float64(int(n.val)) {
-		return fmt.Sprintf("%.1f", n.val)
+func (n NumberLiteral) ToString() string {
+	if n.Val == float64(int(n.Val)) {
+		return fmt.Sprintf("%.1f", n.Val)
 	}
-	return fmt.Sprintf("%v", n.val)
+	return fmt.Sprintf("%v", n.Val)
+}
+
+type BooleanLiteral struct {
+	Val bool
+}
+
+func (b BooleanLiteral) ToString() string {
+	return fmt.Sprintf("%v", b.Val)
+}
+
+type NullLiteral struct {}
+
+func (n NullLiteral) ToString() string {
+	return "nil"
 }

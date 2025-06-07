@@ -2,7 +2,6 @@ package scan
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
@@ -11,13 +10,6 @@ import (
 func Scan(fileContents string) Scanner {
 	s := NewScanner(string(fileContents))
 	s.scanTokens()
-	for _, t := range s.tokens {
-		fmt.Fprint(os.Stdout, t.toString())
-	}
-	for _, e := range s.errors {
-		e.Report()
-	}
-
 	return s
 }
 
@@ -32,6 +24,14 @@ type Scanner struct {
 
 func NewScanner(source string) Scanner {
 	return Scanner{source: source, tokens: make([]Token, 0), errors: make([]errors.Error, 0), line: 1}
+}
+
+func (s *Scanner) GetTokens() []Token {
+	return s.tokens
+}
+
+func (s *Scanner) GetErrors() []errors.Error {
+	return s.errors
 }
 
 func (s *Scanner) isAtEnd() bool {
@@ -182,7 +182,7 @@ func (s *Scanner) string() {
 	s.advance()
 
 	value := s.source[s.start+1 : s.current-1]
-	s.addToken(STRING, stringLiteral{value})
+	s.addToken(STRING, StringLiteral{value})
 }
 
 func (s *Scanner) number() {
@@ -198,7 +198,7 @@ func (s *Scanner) number() {
 	}
 	val, _ := strconv.ParseFloat(s.source[s.start:s.current], 64)
 
-	s.addToken(NUMBER, numberLiteral{val})
+	s.addToken(NUMBER, NumberLiteral{val})
 }
 
 func (s *Scanner) identifier() {

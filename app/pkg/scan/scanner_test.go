@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestSingleChacterTokens(t *testing.T) {
+func TestSingleCharacterTokens(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
