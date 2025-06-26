@@ -32,6 +32,10 @@ func (i *Interpreter) VisitLiteral(v data.LiteralExpr) {
 		i.value = lit.Val
 	case data.NullLiteral:
 		i.value = nil
+	case data.NumberLiteral:
+		i.value = lit.Val
+	case data.StringLiteral:
+		i.value = lit.Val
 	}
 
 }
