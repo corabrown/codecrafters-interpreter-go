@@ -11,6 +11,7 @@ type Parser struct {
 	tokens  []data.Token
 	current int
 	errors  []*errors.Error
+	parsed  bool
 }
 
 func NewParser(tokens []data.Token) Parser {
@@ -18,7 +19,13 @@ func NewParser(tokens []data.Token) Parser {
 }
 
 func (v *Parser) Parse() (data.Expression, []*errors.Error) {
-	return v.expression(), v.errors
+	expressions := v.expression()
+	v.parsed = true
+	return expressions, v.errors
+}
+
+func (v *Parser) Parsed() bool {
+	return v.parsed
 }
 
 func (v *Parser) ParseError() bool {

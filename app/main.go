@@ -49,10 +49,22 @@ func main() {
 		}
 		printer := &parse.AstPrinter{}
 		fmt.Fprint(os.Stdout, printer.Print(l.GetExpression()))
+
+	case "evaluate":
+		l.EvaluateFile()
+		if l.HadError() {
+			return
+		}
+		if l.Value == nil {
+			fmt.Fprint(os.Stdout, "nil")
+		} else {
+			fmt.Fprintf(os.Stdout, "%v", l.Value)
+		}
 	}
 }
 
 var acceptedCommands = map[string]struct{}{
 	"tokenize": {},
 	"parse":    {},
+	"evaluate": {},
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/data"
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/errors"
+	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/evaluate"
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/parse"
 	"github.com/codecrafters-io/interpreter-starter-go/app/pkg/scan"
 )
@@ -13,8 +14,10 @@ type Lox struct {
 	fileContents []byte
 	scan.Scanner
 	parse.Parser
+	evaluate.Interpreter
 	tokens     []data.Token
 	expression data.Expression
+	Value      interface{}
 	errors     []*errors.Error
 }
 
@@ -25,7 +28,6 @@ func NewLox(fileContents []byte) Lox {
 	}
 
 	return Lox{fileContents: fileContents}
-
 }
 
 func (l *Lox) ScanFile() {
@@ -39,10 +41,6 @@ func (l *Lox) ScanFile() {
 }
 
 func (l *Lox) ParseFile() {
-	if l.fileContents == nil {
-		return
-	}
-
 	if !l.Scanned() {
 		l.ScanFile()
 		if l.HadError() {
@@ -56,16 +54,29 @@ func (l *Lox) ParseFile() {
 	l.errors = append(l.errors, parseErrors...)
 }
 
-func (v *Lox) HadError() bool {
-	return len(v.errors) > 0
+func (l *Lox) HadError() bool {
+	return len(l.errors) > 0
 }
 
-func (v *Lox) ReportErrors() {
-	for _, e := range v.errors {
+func (l *Lox) ReportErrors() {
+	for _, e := range l.errors {
 		e.Report()
 	}
 }
 
-func (v *Lox) GetExpression() data.Expression {
-	return v.expression
+func (l *Lox) GetExpression() data.Expression {
+	return l.expression
+}
+
+func (l *Lox) EvaluateFile() {
+	if !l.Parsed() {
+		l.ParseFile()
+		if l.HadError() {
+			return
+		}
+	}
+
+	l.Interpreter = evaluate.NewInterpreter(l.expression)
+	l.Evaluate()
+	l.Value = l.Interpreter.GetValue()
 }
