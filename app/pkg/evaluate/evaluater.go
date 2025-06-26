@@ -19,12 +19,16 @@ func (i *Interpreter) Evaluate() {
 	switch expr := i.expression.(type) {
 	case data.LiteralExpr:
 		i.VisitLiteral(expr)
+	case data.GroupingExpr:
+		i.VisitGrouping(expr)
 	}
 }
 
 func (i *Interpreter) VisitBinary(v data.BinaryExpr) {}
 
-func (i *Interpreter) VisitGrouping(v data.GroupingExpr) {}
+func (i *Interpreter) VisitGrouping(v data.GroupingExpr) {
+	v.Expression.Accept(i)
+}
 
 func (i *Interpreter) VisitLiteral(v data.LiteralExpr) {
 	switch lit := v.Value.(type) {
