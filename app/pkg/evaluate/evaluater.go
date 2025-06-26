@@ -27,10 +27,53 @@ func (i *Interpreter) Evaluate() {
 		i.VisitGrouping(expr)
 	case data.UnaryExpr:
 		i.VisitUnary(expr)
+	case data.BinaryExpr:
+		i.VisitBinary(expr)
 	}
 }
 
-func (i *Interpreter) VisitBinary(v data.BinaryExpr) {}
+func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
+	l, r, ok := getLeftAndRightVals(v)
+	if !ok {
+		i.value = nil
+		return
+	}
+
+	switch v.Operator.TokenType {
+	case data.MINUS:
+		i.value = l - r
+	case data.SLASH:
+		i.value = l / r
+	case data.STAR:
+		i.value = l * r
+	}
+
+}
+
+func getLeftAndRightVals(v data.BinaryExpr) (leftFloat float64, rightFloat float64, ok bool) {
+	right := NewInterpreter(v.Right)
+	right.Evaluate()
+
+	left := NewInterpreter(v.Left)
+	left.Evaluate()
+
+	switch r := right.value.(type) {
+	case float64:
+		rightFloat = r
+	default:
+		return
+	}
+	switch l := left.value.(type) {
+	case float64:
+		leftFloat = l
+	default:
+		return
+	}
+
+	ok = true
+
+	return
+}
 
 func (i *Interpreter) VisitGrouping(v data.GroupingExpr) {
 	v.Expression.Accept(i)
