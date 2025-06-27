@@ -48,6 +48,14 @@ func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
 			i.value = l * r
 		case data.PLUS:
 			i.value = l + r
+		case data.GREATER:
+			i.value = l > r
+		case data.GREATER_EQUAL:
+			i.value = l >= r
+		case data.LESS:
+			i.value = l < r
+		case data.LESS_EQUAL:
+			i.value = l <= r
 		}
 	case stringType:
 		if v.Operator.TokenType == data.PLUS {
