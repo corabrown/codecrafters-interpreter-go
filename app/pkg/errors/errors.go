@@ -12,7 +12,7 @@ type Error struct {
 }
 
 func (v *Error) Report() {
-	fmt.Fprint(os.Stderr, fmt.Sprintf("[line %d] Error%v: %v\n", v.line, v.where, v.message))
+	fmt.Fprintf(os.Stderr, "[line %d] Error%v: %v\n", v.line, v.where, v.message)
 }
 
 func NewError(line int, message string, where string) *Error {
@@ -20,13 +20,14 @@ func NewError(line int, message string, where string) *Error {
 }
 
 type RuntimeError struct {
+	line    int
 	message string
 }
 
-func NewRuntimeError(message string) *RuntimeError {
-	return &RuntimeError{message: message}
+func NewRuntimeError(line int, message string) *RuntimeError {
+	return &RuntimeError{line: line, message: message}
 }
 
 func (v *RuntimeError) Report() {
-	fmt.Fprint(os.Stderr, v.message)
+	fmt.Fprintf(os.Stderr, "%v\n[line %v]", v.message, v.line)
 }

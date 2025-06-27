@@ -11,8 +11,17 @@ type Interpreter struct {
 	errors     []*errors.RuntimeError
 }
 
+const (
+	runtimeUnaryErrorMessage  = "Operand must be number."
+	runtimeBinaryErrorMessage = "Operands must be numbers."
+)
+
 func NewInterpreter(expr data.Expression) Interpreter {
 	return Interpreter{expression: expr}
+}
+
+func (i *Interpreter) addError(token data.Token, message string) {
+	i.errors = append(i.errors, errors.NewRuntimeError(token.Line, message))
 }
 
 func (i *Interpreter) GetValue() interface{} {
@@ -36,14 +45,6 @@ func (i *Interpreter) Evaluate() []*errors.RuntimeError {
 
 func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
 
-	var valid bool
-
-	defer func() {
-		if !valid {
-			i.errors = append(i.errors, errors.NewRuntimeError("Operands must be numbers."))
-		}
-	}()
-
 	left := NewInterpreter(v.Left)
 	left.Evaluate()
 
@@ -56,54 +57,58 @@ func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
 	case data.MINUS:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf - rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.SLASH:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf / rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.STAR:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf * rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.PLUS:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf + rf
-			valid = true
 		} else if ls, rs, ok := getStrings(l, r); ok {
-			i.value = ls + rs 
-			valid = true
+			i.value = ls + rs
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.GREATER:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf > rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.GREATER_EQUAL:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf >= rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.LESS:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf < rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.LESS_EQUAL:
 		if lf, rf, ok := getFloats(l, r); ok {
 			i.value = lf <= rf
-			valid = true
+		} else {
+			i.addError(v.Operator, runtimeBinaryErrorMessage)
 		}
 	case data.BANG_EQUAL:
 		i.value = !isEqual(l, r)
-		valid = true 
 	case data.EQUAL_EQUAL:
 		i.value = isEqual(l, r)
-		valid = true 
 	}
-
 }
 
 func getFloats(left, right any) (float64, float64, bool) {
@@ -151,7 +156,7 @@ func (i *Interpreter) VisitUnary(v data.UnaryExpr) {
 		case float64:
 			i.value = -r
 		default:
-			i.errors = append(i.errors, errors.NewRuntimeError("Operand must be a number."))
+			i.addError(v.Operator, runtimeUnaryErrorMessage)
 		}
 	case data.BANG:
 		i.value = !isTruthy(right.value)
