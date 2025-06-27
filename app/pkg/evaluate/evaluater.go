@@ -36,6 +36,13 @@ func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
 
 	in, exprType := getLeftAndRightVals(v)
 
+	if v.Operator.TokenType == data.BANG_EQUAL {
+		i.value = !isEqual(in.left, in.right)
+	}
+	if v.Operator.TokenType == data.EQUAL_EQUAL {
+		i.value = isEqual(in.left, in.right)
+	}
+
 	switch exprType {
 	case floatType:
 		l, r := in.leftFloat, in.rightFloat
@@ -69,6 +76,8 @@ type binaryInput struct {
 	rightFloat  float64
 	leftString  string
 	rightString string
+	left        any
+	right       any
 }
 
 type binaryExpressionType string
@@ -79,32 +88,33 @@ const (
 	invalidType binaryExpressionType = "invalid"
 )
 
-func getLeftAndRightVals(v data.BinaryExpr) (binaryInput, binaryExpressionType) {
+func getLeftAndRightVals(v data.BinaryExpr) (b binaryInput, exprType binaryExpressionType) {
+	exprType = invalidType
+
 	left := NewInterpreter(v.Left)
 	left.Evaluate()
 
 	right := NewInterpreter(v.Right)
 	right.Evaluate()
 
+	b.left = left.value
+	b.right = right.value
+
 	if l, ok := left.value.(float64); ok {
 		if r, ok := right.value.(float64); ok {
-			return binaryInput{
-				leftFloat:  l,
-				rightFloat: r,
-			}, floatType
+			b.leftFloat = l
+			b.rightFloat = r
+			exprType = floatType
 		}
-	}
-
-	if l, ok := left.value.(string); ok {
+	} else if l, ok := left.value.(string); ok {
 		if r, ok := right.value.(string); ok {
-			return binaryInput{
-				leftString:  l,
-				rightString: r,
-			}, stringType
+			b.leftString = l
+			b.rightString = r
+			exprType = stringType
 		}
 	}
 
-	return binaryInput{}, invalidType
+	return
 }
 
 func (i *Interpreter) VisitGrouping(v data.GroupingExpr) {
@@ -142,7 +152,7 @@ func (i *Interpreter) VisitUnary(v data.UnaryExpr) {
 	}
 }
 
-func isTruthy(val interface{}) bool {
+func isTruthy(val any) bool {
 	if val == nil {
 		return false
 	}
@@ -152,4 +162,33 @@ func isTruthy(val interface{}) bool {
 	default:
 		return true
 	}
+}
+
+func isEqual(left, right any) bool {
+	if (left == nil) && (right == nil) {
+		return true
+	}
+	if (left == nil) || (right == nil) {
+		return false
+	}
+
+	if l, ok := left.(float64); ok {
+		if r, ok := right.(float64); ok {
+			return l == r
+		}
+	}
+
+	if l, ok := left.(string); ok {
+		if r, ok := right.(string); ok {
+			return l == r
+		}
+	}
+
+	if l, ok := left.(bool); ok {
+		if r, ok := right.(bool); ok {
+			return l == r
+		}
+	}
+
+	return false
 }
