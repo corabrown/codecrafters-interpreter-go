@@ -18,3 +18,15 @@ func (v *Error) Report() {
 func NewError(line int, message string, where string) *Error {
 	return &Error{line: line, message: message, where: where}
 }
+
+type RuntimeError struct {
+	message string
+}
+
+func NewRuntimeError(message string) *RuntimeError {
+	return &RuntimeError{message: message}
+}
+
+func (v *RuntimeError) Report() {
+	fmt.Fprint(os.Stderr, v.message)
+}

@@ -15,10 +15,11 @@ type Lox struct {
 	scan.Scanner
 	parse.Parser
 	evaluate.Interpreter
-	tokens     []data.Token
-	expression data.Expression
-	Value      interface{}
-	errors     []*errors.Error
+	tokens        []data.Token
+	expression    data.Expression
+	Value         interface{}
+	errors        []*errors.Error
+	runtimeErrors []*errors.RuntimeError
 }
 
 func NewLox(fileContents []byte) Lox {
@@ -64,6 +65,16 @@ func (l *Lox) ReportErrors() {
 	}
 }
 
+func (l *Lox) HadRuntimeError() bool {
+	return len(l.runtimeErrors) > 0
+}
+
+func (l *Lox) ReportRuntimeErrors() {
+	for _, e := range l.runtimeErrors {
+		e.Report()
+	}
+}
+
 func (l *Lox) GetExpression() data.Expression {
 	return l.expression
 }
@@ -77,6 +88,7 @@ func (l *Lox) EvaluateFile() {
 	}
 
 	l.Interpreter = evaluate.NewInterpreter(l.expression)
-	l.Evaluate()
+	errors := l.Evaluate()
 	l.Value = l.Interpreter.GetValue()
+	l.runtimeErrors = append(l.runtimeErrors, errors...)
 }

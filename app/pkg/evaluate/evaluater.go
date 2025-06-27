@@ -8,7 +8,7 @@ import (
 type Interpreter struct {
 	expression data.Expression
 	value      interface{}
-	errors     []*errors.Error
+	errors     []*errors.RuntimeError
 }
 
 func NewInterpreter(expr data.Expression) Interpreter {
@@ -19,7 +19,7 @@ func (i *Interpreter) GetValue() interface{} {
 	return i.value
 }
 
-func (i *Interpreter) Evaluate() {
+func (i *Interpreter) Evaluate() []*errors.RuntimeError {
 	switch expr := i.expression.(type) {
 	case data.LiteralExpr:
 		i.VisitLiteral(expr)
@@ -30,6 +30,8 @@ func (i *Interpreter) Evaluate() {
 	case data.BinaryExpr:
 		i.VisitBinary(expr)
 	}
+
+	return i.errors
 }
 
 func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
@@ -144,7 +146,7 @@ func (i *Interpreter) VisitUnary(v data.UnaryExpr) {
 		case float64:
 			i.value = -r
 		default:
-			i.errors = append(i.errors, errors.NewError(0, "incorrect use of unary -", ""))
+			i.errors = append(i.errors, errors.NewRuntimeError("Operand must be a number."))
 		}
 	case data.BANG:
 		i.value = !isTruthy(right.value)

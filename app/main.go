@@ -34,6 +34,10 @@ func main() {
 			l.ReportErrors()
 			os.Exit(65)
 		}
+		if l.HadRuntimeError() {
+			l.ReportRuntimeErrors()
+			os.Exit(70)
+		}
 	}()
 
 	switch command {
@@ -52,7 +56,7 @@ func main() {
 
 	case "evaluate":
 		l.EvaluateFile()
-		if l.HadError() {
+		if l.HadError() || l.HadRuntimeError() {
 			return
 		}
 		if l.Value == nil {
