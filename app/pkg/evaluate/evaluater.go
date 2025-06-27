@@ -33,46 +33,70 @@ func (i *Interpreter) Evaluate() {
 }
 
 func (i *Interpreter) VisitBinary(v data.BinaryExpr) {
-	l, r, ok := getLeftAndRightVals(v)
-	if !ok {
-		i.value = nil
-		return
-	}
 
-	switch v.Operator.TokenType {
-	case data.MINUS:
-		i.value = l - r
-	case data.SLASH:
-		i.value = l / r
-	case data.STAR:
-		i.value = l * r
-	}
+	in, exprType := getLeftAndRightVals(v)
 
+	switch exprType {
+	case floatType:
+		l, r := in.leftFloat, in.rightFloat
+		switch v.Operator.TokenType {
+		case data.MINUS:
+			i.value = l - r
+		case data.SLASH:
+			i.value = l / r
+		case data.STAR:
+			i.value = l * r
+		case data.PLUS:
+			i.value = l + r
+		}
+	case stringType:
+		if v.Operator.TokenType == data.PLUS {
+			i.value = in.leftString + in.rightString
+		}
+	}
 }
 
-func getLeftAndRightVals(v data.BinaryExpr) (leftFloat float64, rightFloat float64, ok bool) {
-	right := NewInterpreter(v.Right)
-	right.Evaluate()
+type binaryInput struct {
+	leftFloat   float64
+	rightFloat  float64
+	leftString  string
+	rightString string
+}
 
+type binaryExpressionType string
+
+const (
+	stringType  binaryExpressionType = "string"
+	floatType   binaryExpressionType = "float"
+	invalidType binaryExpressionType = "invalid"
+)
+
+func getLeftAndRightVals(v data.BinaryExpr) (binaryInput, binaryExpressionType) {
 	left := NewInterpreter(v.Left)
 	left.Evaluate()
 
-	switch r := right.value.(type) {
-	case float64:
-		rightFloat = r
-	default:
-		return
-	}
-	switch l := left.value.(type) {
-	case float64:
-		leftFloat = l
-	default:
-		return
+	right := NewInterpreter(v.Right)
+	right.Evaluate()
+
+	if l, ok := left.value.(float64); ok {
+		if r, ok := right.value.(float64); ok {
+			return binaryInput{
+				leftFloat:  l,
+				rightFloat: r,
+			}, floatType
+		}
 	}
 
-	ok = true
+	if l, ok := left.value.(string); ok {
+		if r, ok := right.value.(string); ok {
+			return binaryInput{
+				leftString:  l,
+				rightString: r,
+			}, stringType
+		}
+	}
 
-	return
+	return binaryInput{}, invalidType
 }
 
 func (i *Interpreter) VisitGrouping(v data.GroupingExpr) {
